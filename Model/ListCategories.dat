@@ -1,0 +1,16 @@
+1 Air_pressure 
+1 Oxygen 
+0 Salinity
+0 Temperature
+1 Pressure_GEOMAR
+1 Wind_GEOMAR
+1 Wind_Dir_GEOMAR
+1 Wind_Lighthouse
+1 Wind_Dir_Lighthouse
+1 Current_East_at_2m
+1 Current_North_at_2m
+0 Precipitation
+0 Current
+0 Current_Dir
+0 Wind
+0 Wind_Dir
