@@ -46,10 +46,36 @@ hold on
   X1_timeseries=X_original;
   X2_timeseries=X_f;
   hold on
-  plot(t_true,X_true(:,1),'r');
-  plot(t_f,X_f(:,1),'s');
-  size(X_f)
-  plot(t_f,X_f(:,1),'g');
+ % Convert from seconds to datetime and to hours format
+ %--------------------------------------------------------------------------------------------
+ base = datenum(1970,1,1);
+ for i=1:length(t_f)
+   t_f_time{i}=datestr([t_f(i)]/86400 + base);
+ end; 
+ for i=1:length(t_true)
+   t_true_time{i}=datestr([t_true(i)]/86400 + base);
+ end; 
+ for i=1:length(t_f)
+   t_f_hours(i)=t_f(i)/3600;
+ end; 
+ for i=1:length(t_true)
+   t_true_hours(i)=t_true(i)/3600;
+ end; 
+ %   Plot results
+ %--------------------------------------------------------------------------------------------
+ plot(t_true,X_true(:,1),'r','LineWidth',2);
+ xticks(t_true(1:200:end));
+ xticklabels(t_true_time(1:200:end));
+ xtickangle(60);
+ plot(t_f(1:5:end),X_f(1:5:end,1),'-mo',...
+    'Color',[0,0.7,0.9],'LineWidth',2,...
+    'MarkerFaceColor','b',...
+    'MarkerSize',4);
+ size(X_f)
+ %plot(t_f,X_f(:,2),'g');
+  %xlimits([t-])
+ ylabel('Normalized Oxygen','FontSize',18);
+ legend({'Original data';'Prediction'},'FontSize',12);
 cd(dirCurrent); % change back to current directory 
 % %   D_J = divergenceJeffrey(X1_timeseries,X2_timeseries); % calculate Jeffrey's divergence for original and predicted data 
 % %   for i=1:nVar_f

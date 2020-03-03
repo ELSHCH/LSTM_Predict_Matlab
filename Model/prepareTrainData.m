@@ -20,13 +20,13 @@ end;
 numWindows=i-1;
 
 xd=zeros(sampleS,numResponses,numWindows-1);
-xd_explain=zeros(sampleS,nVar,numWindows-1);
+xd_explain=zeros(sampleS,numFeatures,numWindows-1);
 xq=zeros(numResponses,sampleS);
-xq_explain=zeros(nVar,sampleS);
+xq_explain=zeros(numFeatures,sampleS);
 for i=1:numWindows-1
   for j=1:sampleS   
    xd(j,1:numResponses,i)=dataX(j+i*sampleS,1:numResponses);
-   xd_explain(j,1:nVar,i)=dataX(j+(i-1)*sampleS,1:nVar);
+   xd_explain(j,1:numFeatures,i)=dataX(j+(i-1)*sampleS,1:numFeatures);
   end;
 end;
 %  xd(1,1:sampleS,numWindows)=dataX(end-sampleS+1:end,1);
@@ -37,14 +37,14 @@ end;
 %  end;
  for i=1:numWindows-1
     for i2=1:sampleS 
-     for i1=1:nVar
+     for i1=1:numFeatures
         xq_explain(i1,i2)=xd_explain(i2,i1,i)*(1+rand(1));
      end;
      for i1=1:numResponses
         xq(i1,i2)=xd(i2,i1,i)*(1+rand(1)); 
      end;
     end;  
-  XTrain_1(i)={xq_explain(1:nVar,1:sampleS)};
+  XTrain_1(i)={xq_explain(1:numFeatures,1:sampleS)};
   YTrain_1(i)={xq(1:numResponses,1:sampleS)};
   
  end;

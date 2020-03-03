@@ -2,7 +2,7 @@ function R_covar = covarianceStateTransitionPattern(X_var_f,X_Pred_f,n_var_f,n_o
 %------------------------------------------------------------------------
 %    Estimate covariance of state transition for LSTM  
 %    Input parameters: X_var_f - time series of size (n_observ_f X n_var_f);
-%                      n_var_f - number of parameters;
+%                      n_var_f - number of response parameters;
 %                      n_observ_f - number of time steps;
 %    Output parameters: R_covar - matrix of covariance of state transition (n_var_f X n_var_f)
 %    Last modified Elena 20/02/2020

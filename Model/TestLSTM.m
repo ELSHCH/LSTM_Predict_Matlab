@@ -48,12 +48,12 @@ cd(dirCurrent);
 %predictor_categories_select={'Air pressure','Oxygen','Pressure GEOMAR','Wind GEOMAR', 'Wind Dir GEOMAR', 'Wind Lighthouse',...
  %                             'Wind Dir Lighthouse','Current East at 2m','Current North at 2m'};
 nVar=n_Var;
-% size(X_predictors)
-% plot(new_time_sec,X_predictors(:,11))
+numFeatures=nVar;
+numResponses = 1;
 [data_X,data_T,date_T,ind_start]=readData(X_predictors,new_time,new_time_sec,time_start,nVar);
 
    %  ind_start=ind_start+(s7-1)*100; 
-
+%plot(new_time,X_predictors(:,4));
 %% Prepare time series, standartized time series, define filtered time series and 
 %  build predictor and target sequences for training memory network
 
@@ -62,8 +62,8 @@ nVar=n_Var;
 %  plot(t_true,X_true(:,1));
 %  hold on;
 %  plot(t_filter,X_filter(:,1),'o');
-% Find indices for begining and end of prediction in the lower sampled time
-% series 'X_filter'
+%Find indices for begining and end of prediction in the lower sampled time
+%series 'X_filter'
    for j=1:length(t_filter)-1
       if new_time_sec(ind_start-sampleSize)>=t_filter(j) && new_time_sec(ind_start-sampleSize)<=t_filter(j+1)
           sS_f=j;
@@ -107,6 +107,7 @@ for k=1:length(Files)-2
 end;
 num_hidden = 100;
 numFeatures=nVar;
+numResponses,
 if network_exist==0
     % Train LSTM networks "net" for prediction and save the trained network
     switch Algorithm_Scheme
@@ -114,9 +115,10 @@ if network_exist==0
           numResponses=3;  
           [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);
         case "3LSTM_PATTERN_KF"
-          numResponses=nVar
+          numResponses=nVar;
           'numRes'
-          [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);
+          size(X_filter)
+          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numResponses,numFeatures,windowSize_f);
         case "LSTM_PATTERN" 
           numResponses=3;  
           [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);  
@@ -145,7 +147,7 @@ switch Algorithm_Scheme
     case "LSTM_PATTERN"
        [t_f,X_f_mean,X_f_std]=LSTM_PATTERN(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);   
     case "3LSTM_PATTERN_KF"
-       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN_KF_QRF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);   
+       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN_KF_QRF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,net_F);   
 %     case "1LSTM_KF"
 %        [t_f,X_f_mean,X_f_std]=LSTM_KF_f(ind_f_start,sampleSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);
 %     case "3LSTM_KF"
