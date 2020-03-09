@@ -23,7 +23,7 @@
 %   Last modified Elena 26/11/2019
 %-------------------------------------------------------------------------------
 %% Read input parameters from .dat file
-function [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar,XTrain,YTrain]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData)
+function [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData)
 %TestLSTM(fileName,dirCurrent,dirNetwork,dirData)
 %clear all
 % dirCurrent=pwd;
@@ -44,16 +44,17 @@ fileD=strcat(fileData,'.mat');
 load(fileD,'-mat');
 cd(dirCurrent);
 % Make selection of categories for prediction variables
-[n_Var,X_predictors]=selectCategories('ListCategories.dat',categories,X,nVar);
+[n_Var,categories_final,X_predictors]=selectCategories('ListCategories.dat',categories,X,nVar);
 %predictor_categories_select={'Air pressure','Oxygen','Pressure GEOMAR','Wind GEOMAR', 'Wind Dir GEOMAR', 'Wind Lighthouse',...
  %                             'Wind Dir Lighthouse','Current East at 2m','Current North at 2m'};
 nVar=n_Var;
 numFeatures=nVar;
-numResponses = 1;
+categories_final
 [data_X,data_T,date_T,ind_start]=readData(X_predictors,new_time,new_time_sec,time_start,nVar);
 
    %  ind_start=ind_start+(s7-1)*100; 
 %plot(new_time,X_predictors(:,4));
+
 %% Prepare time series, standartized time series, define filtered time series and 
 %  build predictor and target sequences for training memory network
 
@@ -106,8 +107,6 @@ for k=1:length(Files)-2
   end;    
 end;
 num_hidden = 100;
-numFeatures=nVar;
-numResponses,
 if network_exist==0
     % Train LSTM networks "net" for prediction and save the trained network
     switch Algorithm_Scheme
@@ -115,10 +114,9 @@ if network_exist==0
           numResponses=3;  
           [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);
         case "3LSTM_PATTERN_KF"
-          numResponses=nVar;
-          'numRes'
-          size(X_filter)
-          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numResponses,numFeatures,windowSize_f);
+          %numResponses = numFeatures;
+           numResponses = 1;
+          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numFeatures,numFeatures,windowSize_f);
         case "LSTM_PATTERN" 
           numResponses=3;  
           [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);  
@@ -139,6 +137,8 @@ cd(dirCurrent);
 %% Folk at Algorithm scheme LSTM STANDALONE / LSTM PATTERN /
 %  1 LSTM & KALMAN FILTER / 3 LSTM & KALMAN FILTER
 bsize = 1;
+%numResponses = numFeatures;
+numResponses = 1;
 switch Algorithm_Scheme
     case "LSTM_STANDALONE"
        [t_f,X_f_mean]=LSTM_STANDALONE(ind_f_start,sampleSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F); 
@@ -147,7 +147,7 @@ switch Algorithm_Scheme
     case "LSTM_PATTERN"
        [t_f,X_f_mean,X_f_std]=LSTM_PATTERN(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);   
     case "3LSTM_PATTERN_KF"
-       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN_KF_QRF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,net_F);   
+       [t_f,X_f_mean,X_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,net_F);   
 %     case "1LSTM_KF"
 %        [t_f,X_f_mean,X_f_std]=LSTM_KF_f(ind_f_start,sampleSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);
 %     case "3LSTM_KF"
@@ -159,7 +159,7 @@ fileName = strcat(fileData,'_',Algorithm_Scheme,'_',choice_training,'_',num2str(
 dirName = '../PredictionData';
 numResponses=length(X_f_mean(1,:));
 for i=1:numResponses
-    cts(i)=categories(i);
+    cts(i)=categories_final(i);
 end;    
 
 savePrediction(t_f,X_f_mean,t_true,X_true,t_filter,X_filter,numResponses,cts,fileName,dirName);

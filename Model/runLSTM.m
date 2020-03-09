@@ -19,7 +19,7 @@
 
 % Run LSTM model with parameters defined in .dat file
 hold on
-  [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar,XTrain,YTrain]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData);
+  [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData);
   cd(dirData) % change directory to the predictions directory
 %----------------------------------------------------------------------------------------------
 % Estimate prediction skill using RMSE and Jeffreys Divergence metrics

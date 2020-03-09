@@ -1,4 +1,4 @@
-function [nVar_f,X_predictors_f]=selectCategories(namefile_f,categories_init_f,X_f,Var_f)
+function [nVar_f,categories_final,X_predictors_f]=selectCategories(namefile_f,categories_init_f,X_f,Var_f)
 %------------------------------------------------------------------------------------------
 %   select parameters from file with list of all parameters and form an array
 %   of predictors based on selected categories
@@ -25,13 +25,19 @@ function [nVar_f,X_predictors_f]=selectCategories(namefile_f,categories_init_f,X
  end;
  fclose(fin);
  lengthT=length(X_f(:,1));
- nVar_f=0;
-% Select predictors according to defined 
+ nVar_f=1;
+% Select predictors according to defined and rearrange predictors with oxygen parameters being first
  for j=1:k
- for i=1:Var_f
+  for i=1:Var_f
      if strcmp(cellstr(parameterDef{j}),cellstr(categories_init_f{i}))==1 
+       if strcmp(cellstr(categories_init_f{i}),'Oxygen')==1  
+         X_predictors_f(:,1)=X_f(:,i);
+         categories_final{1}='Oxygen';
+       else
          nVar_f=nVar_f+1;
+         categories_final{nVar_f}=categories_init_f{i};
          X_predictors_f(:,nVar_f)=X_f(:,i);
+       end;  
      end;  
-   end;   
+  end;   
  end; 

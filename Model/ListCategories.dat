@@ -1,10 +1,10 @@
-1 Air_pressure 
+0 Air_pressure 
 1 Oxygen 
 0 Salinity
 0 Temperature
-0 Pressure_GEOMAR
+1 Pressure_GEOMAR
 1 Wind_GEOMAR
-1 Wind_Dir_GEOMAR
+0 Wind_Dir_GEOMAR
 0 Wind_Lighthouse
 0 Wind_Dir_Lighthouse
 0 Current_East_at_2m
