@@ -1,4 +1,4 @@
-function [t_f,Y_f_mean,Y_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(time_begin,sampleS,bs,time_end,nVar,t_tr,X_tr,t_down,X_down,numFeatures,numResponses,net)
+function [t_f,Y_f_mean,Y_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(time_begin,sampleS,bs,time_end,nVar,t_tr,X_tr,t_down,X_down,numFeatures,numResponses,numHiddenUnits,number_Epochs,net)
 %------------------------------------------------------------------------------------
 %   LSTM model combined with Kalman Filter corrections (LSTM trains for covariance of predictions 
 %                                                       and for covariance of time series) 
@@ -11,8 +11,7 @@ function [t_f,Y_f_mean,Y_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(time_begin,sam
 % Last modified 24.02.2020 E.Shchekinova
 %-------------------------------------------------------------------------------------
 % Define options for training a small LSTM network model only for time series (size nVar) 
- 
- numHiddenUnits = 100;
+ numEpochs=number_Epochs;
  layers = [ ...
     sequenceInputLayer(numFeatures)
     lstmLayer(numHiddenUnits,'OutputMode','sequence')
@@ -21,11 +20,11 @@ function [t_f,Y_f_mean,Y_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(time_begin,sam
 %     dropoutLayer(0.7)
 %     lstmLayer(numHiddenUnits)
     dropoutLayer(0.7)
-    fullyConnectedLayer(numFeatures)
+    fullyConnectedLayer(numResponses)
     regressionLayer];
  miniBatchSize = 20;
  options = trainingOptions('sgdm', ...
-    'MaxEpochs',100, ...
+    'MaxEpochs',numEpochs, ...
     'GradientThreshold',1, ...
     'MiniBatchSize',miniBatchSize, ...
     'InitialLearnRate',0.01, ...
@@ -34,13 +33,13 @@ function [t_f,Y_f_mean,Y_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(time_begin,sam
     'Verbose',0);% ...
 %load NetworkQRFOxyWindWindDirPress48
 %load NetworkQRFOxy48_4Var
-load NetworkQRFOxy48_3_1Var
+%load NetworkQRFOxy48_3_1Var
 % Initialize prediction time series of a given sizes 
 lengthWindow=time_end-time_begin+1; % length of prediction horizion ( the same as sampleS here)
 
-Y_f=zeros(lengthWindow,bs,numFeatures);
-Y_f_mean=zeros(lengthWindow,numFeatures);
-Y_f_std=zeros(lengthWindow,numFeatures);
+Y_f=zeros(lengthWindow,bs,numResponses);
+Y_f_mean=zeros(lengthWindow,numResponses);
+Y_f_std=zeros(lengthWindow,numResponses);
 % Define prediction time
 t_f=t_down(time_begin:time_end);
 
@@ -102,6 +101,7 @@ for i=1:numWindows-1
     XTest={[xq_explain(1:numFeatures,1:lengthWindow)]}; % explained parameters 
     for tr=1:1 
      net=resetState(net);   
+ 
      YPred = predict(net,XTest,'MiniBatchSize',1); % estimate responses/predictions
 
      X  = cell2mat(YPred); % convert from cell to array format   
@@ -210,7 +210,6 @@ end;
  YTrain=YTrain_1; % define responses array
  
 % Set network options with 3*nVar number of inputs and outputs ( nVar time series, nVar covariances of prediction, nVar covariances of time series  
- numHiddenUnits = 100;
  layers = [ ...
     sequenceInputLayer(numFeatures)
     lstmLayer(numHiddenUnits,'OutputMode','sequence')
@@ -223,7 +222,7 @@ end;
     regressionLayer];
  miniBatchSize = 20;
  options = trainingOptions('sgdm', ...
-    'MaxEpochs',100, ...
+    'MaxEpochs',numEpochs, ...
     'GradientThreshold',1, ...
     'MiniBatchSize',miniBatchSize, ...
     'InitialLearnRate',0.01, ...
@@ -232,7 +231,7 @@ end;
     'Verbose',0);% ...
 
 % Train LSTM network with input size 3*nVar 
-%netQRF = trainNetwork(XTrain,YTrain,layers,options);
+netQRF = trainNetwork(XTrain,YTrain,layers,options);
 clear H P P_init Q_std R_std
 % Initialize unitary matrices  
   P_init=eye(numResponses);
@@ -345,4 +344,4 @@ end;
 %   end;
 % end; 
 t_f=td(1:lengthWindow,idWindow+1);
-%save NetworkQRFOxy48_3_1Var netQRF net
+save NetworkQRFOxy48_3_1Var netQRF net

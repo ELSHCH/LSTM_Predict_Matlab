@@ -1,4 +1,4 @@
-function [XTrain,YTrain,net]=prepareTrainData(dataX,dataT,numResponses,numFeatures,sampleS)
+function [XTrain,YTrain,net]=prepareTrainData(dataX,dataT,numFeatures,numResponses,numHidden,number_Epochs,sampleS)
 %------------------------------------------------------------------------------ 
 %  Prepare set of data for training from time sequence and train network         
 %------------------------------------------------------------------------------
@@ -12,8 +12,8 @@ nVar=size(dataX,2);
 lengthT=length(dataT);
 shiftS=0;
 i=1;
-numHiddenUnits = 100;
-
+numHiddenUnits = numHidden;
+numEpochs=number_Epochs;
 while sampleS+(i-1)*sampleS-(i-1)*shiftS <= lengthT
     i=i+1;
 end;
@@ -38,10 +38,10 @@ end;
  for i=1:numWindows-1
     for i2=1:sampleS 
      for i1=1:numFeatures
-        xq_explain(i1,i2)=xd_explain(i2,i1,i)*(1+rand(1));
+        xq_explain(i1,i2)=xd_explain(i2,i1,i);
      end;
      for i1=1:numResponses
-        xq(i1,i2)=xd(i2,i1,i)*(1+rand(1)); 
+        xq(i1,i2)=xd(i2,i1,i); 
      end;
     end;  
   XTrain_1(i)={xq_explain(1:numFeatures,1:sampleS)};
@@ -63,7 +63,7 @@ end;
     regressionLayer];
  miniBatchSize = 20;
  options = trainingOptions('sgdm', ...
-    'MaxEpochs',100, ...
+    'MaxEpochs',numEpochs, ...
     'GradientThreshold',1, ...
     'MiniBatchSize',miniBatchSize, ...
     'InitialLearnRate',0.01, ...

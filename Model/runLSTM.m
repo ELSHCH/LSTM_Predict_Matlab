@@ -16,10 +16,12 @@
   dirCurrent='C:/Users/eshchekinova/Documents/BoknisData/LSTMPred/Model'; % current directory
   dirNetwork='../LSTMNetwork'; % directory for saving trained network
   dirData='../PredictionData'; % directory for saving prediction data
-
+% Define parameters of network  
+numHidden= 100;
+number_Epochs = 100;
 % Run LSTM model with parameters defined in .dat file
 hold on
-  [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData);
+  [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData,numHidden,number_Epochs);
   cd(dirData) % change directory to the predictions directory
 %----------------------------------------------------------------------------------------------
 % Estimate prediction skill using RMSE and Jeffreys Divergence metrics
@@ -37,7 +39,7 @@ hold on
      if (t_true(i)==t_f(k))
        rmse(s1,1:nVar_f)=abs(X_f(k,1:nVar_f)-X_true(i,1:nVar_f)); % calculate RMSE for available prediction
        X_original(s1,1:nVar_f)=X_true(i,1:nVar_f); % create a copy of original time series 
-       time(s1)=t_true(i); % create a copy of time series
+       time(s1)=t_f(k); % create a copy of time series
        s1=s1+1;
      end;
    end;
@@ -69,6 +71,10 @@ hold on
  xtickangle(60);
  plot(t_f(1:5:end),X_f(1:5:end,1),'-mo',...
     'Color',[0,0.7,0.9],'LineWidth',2,...
+    'MarkerFaceColor','b',...
+    'MarkerSize',4);
+plot(time(1:5:end),X_original(1:5:end,1),'-s',...
+    'Color',[0.1,0.9,0.9],'LineWidth',2,...
     'MarkerFaceColor','b',...
     'MarkerSize',4);
  size(X_f)

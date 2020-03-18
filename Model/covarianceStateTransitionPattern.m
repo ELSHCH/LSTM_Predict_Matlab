@@ -7,7 +7,7 @@ function R_covar = covarianceStateTransitionPattern(X_var_f,X_Pred_f,n_var_f,n_o
 %    Output parameters: R_covar - matrix of covariance of state transition (n_var_f X n_var_f)
 %    Last modified Elena 20/02/2020
 %-----------------------------------------------------------------------
-n_var_f
+
 for i=1:n_var_f
   for j=1:n_observ_f
     diff_var(i,j)=abs(X_var_f(i,j)-X_Pred_f(i,j)); 

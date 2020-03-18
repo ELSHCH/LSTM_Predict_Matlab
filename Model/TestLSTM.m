@@ -23,15 +23,14 @@
 %   Last modified Elena 26/11/2019
 %-------------------------------------------------------------------------------
 %% Read input parameters from .dat file
-function [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData)
+function [fileData,Algorithm_Scheme,choice_training,sampleSize,P_horizon_h,n_points,nVar]=TestLSTM(fileName,dirCurrent,dirNetwork,dirData,numHidden,number_Epochs)
 %TestLSTM(fileName,dirCurrent,dirNetwork,dirData)
 %clear all
 % dirCurrent=pwd;
 %  
 %  
 % fileName= 'InputPrediction.dat'; % file name with user-defined initial parameters for prediction 
- 
-[Algorithm_Scheme,choice_training,time_start,P_horizon_s,n_points,nVar,sampleSize,fileData]=...
+  [Algorithm_Scheme,choice_training,time_start,P_horizon_s,n_points,nVar,sampleSize,fileData]=...
                   InputParam(fileName); % read parameters from initial file
 P_horizon_h=P_horizon_s/3600;
 % for s7=1:4              
@@ -49,7 +48,7 @@ cd(dirCurrent);
  %                             'Wind Dir Lighthouse','Current East at 2m','Current North at 2m'};
 nVar=n_Var;
 numFeatures=nVar;
-categories_final
+
 [data_X,data_T,date_T,ind_start]=readData(X_predictors,new_time,new_time_sec,time_start,nVar);
 
    %  ind_start=ind_start+(s7-1)*100; 
@@ -98,7 +97,7 @@ windowSize_f=ind_f_end-ind_f_start+1;
 Files=dir(dirNetwork);
 Networksfilename=cell(length(Files)-2,1);
 network_exist=0;  % define variable "1" - network already exist in the library of pretrained networks , "0" - does not exist 
-fileNetwork = strcat(Algorithm_Scheme,'_',choice_training,'_',num2str(sampleSize),'_',num2str(P_horizon_h),'_',num2str(n_points),'_',num2str(nVar),'.mat');
+fileNetwork = strcat(Algorithm_Scheme,'_',choice_training,'_',num2str(sampleSize),'_',num2str(P_horizon_h),'_',num2str(n_points),'_',num2str(nVar),'_',num2str(numHidden),'.mat');
 for k=1:length(Files)-2
   Networksfilename{k}=Files(k+2).name;
   
@@ -106,20 +105,20 @@ for k=1:length(Files)-2
       network_exist=1;
   end;    
 end;
-num_hidden = 100;
+num_hidden = numHidden;
 if network_exist==0
     % Train LSTM networks "net" for prediction and save the trained network
     switch Algorithm_Scheme
         case "LSTM_PATTERN_KF" 
-          numResponses=3;  
-          [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);
+          numResponses=1;  
+          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numFeatures,numResponses,num_hidden,number_Epochs,windowSize_f);
         case "3LSTM_PATTERN_KF"
-          %numResponses = numFeatures;
-           numResponses = 1;
-          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numFeatures,numFeatures,windowSize_f);
+          numResponses = numFeatures;
+          % numResponses = 1;
+          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numFeatures,numResponses,num_hidden,number_Epochs,windowSize_f);
         case "LSTM_PATTERN" 
-          numResponses=3;  
-          [XTrain,YTrain,net]=prepareTrainData(X_filter,t_filter,numResponses,numFeatures,windowSize_f);  
+          numResponses=1; 
+          [XTrain,YTrain,net]=prepareTrainData(X_filter(floor(length(t_filter)/2+1:length(t_filter)),1:nVar),t_filter(1:floor(length(t_filter)/2)),numFeatures,numResponses,num_hidden,number_Epochs,windowSize_f);  
         otherwise
           [net,layers,options] = trainNetworkStep(XTrain,YTrain,nVar); % LSTM network for prediction
     end;
@@ -139,15 +138,16 @@ cd(dirCurrent);
 bsize = 1;
 %numResponses = numFeatures;
 numResponses = 1;
+numHiddenUnits=numHidden;
 switch Algorithm_Scheme
     case "LSTM_STANDALONE"
        [t_f,X_f_mean]=LSTM_STANDALONE(ind_f_start,sampleSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F); 
     case "LSTM_PATTERN_KF"
-       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN_KF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);
+       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN_KF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,numHiddenUnits,number_Epochs,net_F);
     case "LSTM_PATTERN"
-       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);   
+       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,numHiddenUnits,number_Epochs,net_F);   
     case "3LSTM_PATTERN_KF"
-       [t_f,X_f_mean,X_f_std,XTrain,YTrain]=LSTM_PATTERN_KF_QRF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,net_F);   
+       [t_f,X_f_mean,X_f_std]=LSTM_PATTERN_KF_QRF(ind_f_start,windowSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,numFeatures,numResponses,numHiddenUnits,number_Epochs,net_F);   
 %     case "1LSTM_KF"
 %        [t_f,X_f_mean,X_f_std]=LSTM_KF_f(ind_f_start,sampleSize_f,bsize,ind_f_end,nVar,t_true,X_true,t_filter,X_filter,net_F);
 %     case "3LSTM_KF"

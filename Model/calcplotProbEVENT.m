@@ -1,15 +1,17 @@
-function calcplotProbEVENT
+function calcPlotProbEVENT
 dirCurrent='C:/Users/eshchekinova/Documents/BoknisData/LSTMPred/Model';
 cd(dirCurrent);
 dirData='../PredictionData';
 fileName='InPrediction.dat';
 [Algorithm_Scheme,choice_training,time_start,P_horizon_s,n_points,nVar,sampleSize,fileData]=...
                   InputParam(fileName);
-fileData = strcat(Algorithm_Scheme,'_',choice_training,'_',num2str(sampleSize),'_', ...
-             num2str(n_points),'_',num2str(nVar),'.mat'); 
+fileData = strcat(fileData,'_',Algorithm_Scheme,'_',choice_training,'_',num2str(sampleSize),'_',num2str(P_horizon_s),'_', ...
+             num2str(n_points),'_',num2str(nVar),'.mat');         
 cd(dirData);         
 load('NormalizedBoknis.mat');
 load(fileData);
+hold on
+
 s1=1;
 nVar=size(X_f,2);
 nOb=size(X_f,1);
