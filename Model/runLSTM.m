@@ -17,7 +17,7 @@
   dirNetwork='../LSTMNetwork'; % directory for saving trained network
   dirData='../PredictionData'; % directory for saving prediction data
 % Define parameters of network  
-numHidden= 100;
+numHidden= 10;
 number_Epochs = 100;
 % Run LSTM model with parameters defined in .dat file
 hold on
