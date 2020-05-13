@@ -1,0 +1,6 @@
+[X_f_mean,t_true,X_true,t_filter,X_filter]=unstandartize(mu,sig,max_D,t_f,X_f_mean,t_true,X_true,t_filter,X_filter,ind_responses) 
+nVar_res=length(X_f_mean(1,:))
+for i=1:length(X_true(1,:))
+  X_true(:,si)=(X_true(:,si)+mu(si))*sig(si)*max_D;
+  X_filter(:,si)=(X_filter(:,si)+mu(si))*sig(si)*max_D;
+end;

@@ -1,5 +1,6 @@
-function [t_true_f,X_true_f,t_downscale_f,X_downscale_f,XTrain_f,YTrain_f,Nsteps_f] = ...
-         PrepareData(n_points_f,P_horizon_sec_f,define_choice_training_f,TrainInter_f,n_Var_f,data_X_f,data_T_f)
+function [t_true_f,X_true_f,sig,mu,max_X_f,t_downscale_f,X_downscale_f,XTrain_f,YTrain_f,Nsteps_f] = ...
+         PrepareData(n_points_f,P_horizon_sec_f,define_choice_training_f,TrainInter_f,...
+                     n_Var_f,data_X_f,data_T_f)
 
 %  Prepare data to standartized form according to selected training
 %  interval
@@ -30,8 +31,9 @@ function [t_true_f,X_true_f,t_downscale_f,X_downscale_f,XTrain_f,YTrain_f,Nsteps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 len_data=length(data_X_f(:,1));
+m_points=floor(len_data/n_points_f);
+X_downscale_f=zeros(m_points,n_Var_f);
 
-X_downscale_f=zeros(floor(len_data/2),n_Var_f);
 
 for si=1:n_Var_f
 % Standartize data
@@ -40,18 +42,13 @@ for si=1:n_Var_f
  sig(si) = std(data_X_f(:,si));
 
  data_X_f(:,si)=(data_X_f(:,si)-mu(si))/sig(si);
- max_X_f=max(data_X_f(:,si));
- data_X_f(:,si)=data_X_f(:,si)/max_X_f;
+ max_X_f(si)=max(data_X_f(:,si));
+ data_X_f(:,si)=data_X_f(:,si)/max_X_f(si);
 
 % Create copy of original time series 
 
  X_true_f(1,si)=data_X_f(1,si);
  t_true_f(1)=data_T_f(1);
-
-% Create downscaled time series 
-
- X_downscale_f(1,si)=data_X_f(1,si);
- t_downscale_f(1)=data_T_f(1);
  
  num_points=floor(len_data);
  for i=1:num_points
@@ -65,18 +62,16 @@ for si=1:n_Var_f
 
  Nsteps_f=floor(P_horizon_sec_f/deltaT); % number of time steps corresponing to prediction horizon ( here given in seconds)
 
- %Nsteps_f = 300;
- m_points=floor(len_data/n_points_f);
 
- for i=2:m_points
-  if i*n_points_f<=len_data
-     X_d_f(i,si)=mean(data_X_f(1+(i-1)*n_points_f:i*n_points_f,si));
-     t_d_f(i)=data_T_f(1+(i-1)*n_points_f);
-  end;
+ for i=1:m_points
+     X_d_f(m_points-(i-1),si)=mean(data_X_f(1+len_data-i*n_points_f:len_data-(i-1)*n_points_f,si));
+     t_d_f(m_points-(i-1))=data_T_f(len_data-(i-1)*n_points_f);
  end;
- t_downscale_f=linspace(data_T_f(1),t_d_f(end),floor(len_data/2));
+ 
+ t_downscale_f=linspace(t_d_f(1),t_d_f(end),m_points);
 
  X_downscale_f(:,si)=interp1(t_d_f,X_d_f(:,si),t_downscale_f);
+
 % Assign data for training 
 
  if define_choice_training_f == "FULL" || TrainInter_f==1

@@ -1,7 +1,10 @@
-function [t_f,Y_f_mean,Y_f_std]=LSTM_PATTERN_KF(time_begin,sampleS,bs,time_end,nVar,t_tr,X_tr,t_down,X_down,numFeatures,numResponses,numHiddenUnits,number_Epochs,net)
+function [t_f,Y_f_mean,Y_f_std]=LSTM_PATTERN_KF(time_begin,sampleS,bs,time_end,nVar,t_tr,X_tr,...
+    t_down,X_down,numHiddenUnits,number_Epochs,ind_predictors,ind_responses,net,net_KF)
 %% Find start and end time indices for filtered time series, 
 %  The interval t_filter(ind_point_start:ind_point_end) should overlap t_true(time_start)
  numEpochs=number_Epochs;
+ numFeatures=length(ind_predictors);
+ numResponses=length(ind_responses);
  layers = [ ...
     sequenceInputLayer(numFeatures)
     lstmLayer(numHiddenUnits,'OutputMode','sequence')
@@ -53,9 +56,9 @@ xq_explain=zeros(numFeatures,sampleS);
 hold on
 for i=1:numWindows-1
   for j=1:sampleS   
-   xd(j,1:numFeatures,i)=X_down(j+i*sampleS-i*shiftS,1:numFeatures);
+   xd(j,1:numFeatures,i)=X_down(j+i*sampleS-i*shiftS,ind_predictors);
    td(j,i)=t_down(j+(i-1)*sampleS-(i-1)*shiftS);
-   xd_explain(j,1:numFeatures,i)=X_down(j+(i-1)*sampleS-(i-1)*shiftS,1:numFeatures);
+   xd_explain(j,1:numFeatures,i)=X_down(j+(i-1)*sampleS-(i-1)*shiftS,ind_predictors);
   end;
 end;
 hold on
@@ -84,7 +87,7 @@ for i=1:numWindows-1
     end;  
     
     XTest={[xq_explain(1:numFeatures,1:lengthWindow)]}; % explained parameters 
-    for tr=1:2 
+    for tr=1:1 
      net=resetState(net);   
  
      YPred = predict(net,XTest,'MiniBatchSize',1); % estimate responses/predictions
@@ -149,12 +152,13 @@ for i=1:numWindows-1
     end;
    % plot(td(1:lengthWindow,i),XPred(1:numResponses,:),'g');
     Y_f(:,1,1:numResponses)=XPred(1:numResponses,:)';
-    
-end; 
+if i==idWindow+1     
 for i1=1:numResponses
   for i2=1:lengthWindow  
-     Y_f_mean(i2,i1)=mean(Y_f(i2,:,i1));
-     Y_f_std(i2,i1)=std(Y_f(i2,:,i1));
+     Y_f_mean(i2,i1)=Y_f(i2,1,i1);
+     Y_f_std(i2,i1)=Y_f(i2,1,i1);
   end;
 end;  
+end;
+end;
 t_f=td(1:lengthWindow,idWindow+1);

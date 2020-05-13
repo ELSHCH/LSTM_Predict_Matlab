@@ -29,6 +29,7 @@ for i=1:numWindows-1
    xd_explain(j,1:numFeatures,i)=dataX(j+(i-1)*sampleS,1:numFeatures);
   end;
 end;
+
 %  xd(1,1:sampleS,numWindows)=dataX(end-sampleS+1:end,1);
 %  for k1=1:nVar
 %   for k2=1:sampleS   

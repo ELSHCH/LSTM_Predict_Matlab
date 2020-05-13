@@ -9,12 +9,19 @@ function [data_X_f,data_T_f,data_T_date,ind_start]=readData(X_f,t_f,t_sec_f,time
 %                     ind_start - start index corresponding to initial start of prediction 
 % Last modified Elena 28/11/2019 
 %-------------------------------------------------------------------------------------------------
-
+base = datenum(1970,1,1);
 if class(time_start_f)=='char'
-  t_start=posixtime(datetime(time_start_f,'Format','dd-MMM-yyyy')); %convert string value to date
-  %t_start(1),t_sec_f,t_start(end)
-  ind_f=find(t_sec_f>=t_start);
-  ind_start=ind_f(1);
+  t_start=posixtime(datetime(time_start_f,'Format','dd-MMM-yyyy HH:mm:ss')); %convert string value to date
+ % t_start(1),
+
+  if t_start>t_sec_f(end)
+   ind_start=0;
+  elseif t_start<t_sec_f(1)
+   ind_start=-1;   
+  else    
+   ind_f=find(t_sec_f>=t_start);
+   ind_start=ind_f(1);
+  end; 
 elseif class(time_start_f)=='double'
   ind_start=time_start_f;  
 end;

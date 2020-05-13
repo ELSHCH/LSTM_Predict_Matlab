@@ -14,7 +14,8 @@
 *   5th line  prediction interval        // length of prediction in hours 
 *   6th line  number of points           // parameter corresponds to frequency of low rate sampling
 *   7th line  number of parameters       // number of parameters for prediction, 1 is a single parameter
-*   8th line name of file               // name of file containing time series data
+*   8th line  train or test option       // train - for training network model, test - for testing network model 
+*   9th line name of file               // name of file containing time series data
 *
 *
 * USAGE  The simulations are initialized in Matlab by running main file runLSTM.m from command line or LSTMPrediction.mlapp 
